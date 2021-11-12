@@ -51,11 +51,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: Docker Hub Sign-in
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      - name: Building Docker Image for api
-        run: cd konker.registry.api
       - name: Preparing api build
-        run: docker build -t $REPO:latest -t $REPO:konker.registry.api-${GITHUB_RUN_ID} .
+        run: cd konker.registry.api && docker build -t $REPO:latest -t $REPO:konker.registry.api-${GITHUB_RUN_ID} . && cd ..
       - name: Publish Docker Image
         run: docker push $REPO
-      - name: Post api build
-        run: cd ..
