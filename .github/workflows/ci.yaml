@@ -145,7 +145,7 @@ jobs:
         run: docker push $REPO
 
   release_web:
-    name: Publish Docker Image
+    name: Publish Web Docker Image
     runs-on: ubuntu-latest
     needs: [ compile, test ]
     env:
