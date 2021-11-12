@@ -56,6 +56,9 @@ Konker provides a hosted Konker Platform. Please, contact us at http://www.konke
 #### Deploying ####
 If you built your package with maven, the Konker Platform can be deployed as a web application on your favorite servlet container (we use jetty). You will need to customize the application.conf file to your needs. See application.conf.example on how to do that.
 
+### CI ###
+All Branchs and Pull Requests are submited to Github Action, before merge ci need to give you a gree light, for more info please se https://github.com/KonkerLabs/konker-platform/actions
+
 ## License and Copyright
    Copyright 2017 Konker Labs
 
