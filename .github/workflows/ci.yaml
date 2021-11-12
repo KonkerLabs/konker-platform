@@ -5,7 +5,7 @@ on:
       - 'master'
 jobs:
   compile:
-    name: Compile and Test (JDK 8)
+    name: Compile (JDK 8)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
@@ -20,6 +20,14 @@ jobs:
       - name: Cache
         uses: actions/cache@v2.1.6
         with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ env.cache-name }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+            ${{ runner.os }}-
+      - name: Cache
+        uses: actions/cache@v2.1.6
+        with:
           path: /home/runner/work/konker-platform/konker-platform/konker.registry.api/target/registry-api.jar
           key: ${{ runner.os }}-build-${{ env.cache-name }}-registry-api.jar
           restore-keys: |
@@ -28,6 +36,7 @@ jobs:
             ${{ runner.os }}-
 
   test:
+    needs: [ compile ]
     name: Test (JDK 8)
     runs-on: ubuntu-latest
     steps:
