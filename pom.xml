@@ -72,7 +72,7 @@
         <repository>
             <id>github</id>
             <name>KonkerLabs</name>
-            <url>https://maven.pkg.github.com/KonkerLabs/space-management-system</url>
+            <url>https://maven.pkg.github.com/konkerlabs/konker-platform</url>
         </repository>
     </distributionManagement>
 
