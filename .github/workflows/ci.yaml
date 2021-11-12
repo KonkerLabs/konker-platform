@@ -56,19 +56,9 @@ jobs:
       REPO: ${{ secrets.DOCKER_REPO }}
     steps:
       - uses: actions/checkout@v1
-      - name: Set up JDK
-        uses: actions/setup-java@v1
-        with:
-          java-version: 1.8
-      - name: Publish artifact on GitHub Packages
-        run: mvn -DskipTests=true package install
-      - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v2
-        with:
-          name: registry-api.jar
       - name: Docker Hub Sign-in
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-      - name: Preparing api build
+      - name: Build Docker image
         run: cd konker.registry.api && mkdir -p docker-resources/dist && cp /home/runner/work/konker-platform/konker-platform/konker.registry.api/target/registry-api.jar docker-resources/dist/registry-api.jar && docker build -t $REPO:latest -t $REPO:konker.registry.api-${GITHUB_RUN_ID} .
       - name: Publish Docker Image
         run: docker push $REPO
