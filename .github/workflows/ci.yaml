@@ -2,7 +2,7 @@ name: Build
 on:
   push:
     branches-ignore:
-      - 'master'
+      - 'release'
 jobs:
   compile:
     name: Compile (JDK 8)
