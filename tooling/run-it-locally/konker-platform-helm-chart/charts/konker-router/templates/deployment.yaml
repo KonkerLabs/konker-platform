@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "konker-data-processor.fullname" . }}
+  name: {{ include "konker-router.fullname" . }}
   labels:
-    {{- include "konker-data-processor.labels" . | nindent 4 }}
+    {{- include "konker-router.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "konker-data-processor.selectorLabels" . | nindent 6 }}
+      {{- include "konker-router.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "konker-data-processor.selectorLabels" . | nindent 8 }}
+        {{- include "konker-router.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "konker-data-processor.serviceAccountName" . }}
+      serviceAccountName: {{ include "konker-router.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -35,7 +35,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -45,6 +45,8 @@ spec:
             httpGet:
               path: /
               port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           env:
             {{- if .Values.configmap -}}
               {{- range $key, $value := .Values.configmap }}
@@ -65,8 +67,6 @@ spec:
                     key: {{ $key }}
               {{- end }}
               {{- end }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

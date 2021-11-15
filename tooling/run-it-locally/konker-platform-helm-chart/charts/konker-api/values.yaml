@@ -8,7 +8,7 @@ image:
   repository: konkerlabs/konker-platform
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "konker.registry.web-1462007271"
+  tag: "konker.registry.api-1462007271"
 
 imagePullSecrets: []
 nameOverride: ""
