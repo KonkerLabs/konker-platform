@@ -1,4 +1,4 @@
-FROM openjdk13:alpine-jre
+FROM adoptopenjdk/openjdk13:alpine-jre
 
 LABEL maintainer="Andre Rocha <andre@konkerlabs.com>"
 LABEL service_name="konker-http-data"

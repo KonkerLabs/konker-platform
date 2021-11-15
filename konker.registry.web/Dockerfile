@@ -1,4 +1,4 @@
-FROM openjdk13:alpine-jre
+FROM adoptopenjdk/openjdk13:alpine-jre
 
 
 MAINTAINER Andre Rocha <andre@konkerlabs.com>
