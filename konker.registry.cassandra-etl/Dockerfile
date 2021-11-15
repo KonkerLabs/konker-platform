@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk8:jre8u232-b09-alpine
+FROM openjdk13:alpine-jre
 
 LABEL maintainer="Douglas Apolinário <douglas@konkerlabs.com>"
 
