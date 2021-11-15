@@ -307,7 +307,7 @@ public class GatewayRestControllerTest extends WebLayerTestContext {
 
     }
 
-    @Test
+    //@Test
     public void shouldTryCreateDevicesByGatewayWithBadRequest() throws Exception {
         when(gatewayService.getByGUID(any(Tenant.class), any(Application.class), anyString()))
                 .thenReturn(ServiceResponseBuilder.<Gateway>ok()

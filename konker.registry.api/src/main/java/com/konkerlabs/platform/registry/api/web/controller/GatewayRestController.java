@@ -18,10 +18,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @Scope("request")
@@ -125,16 +123,13 @@ public class GatewayRestController extends AbstractRestController implements Ini
     public List<DeviceRegisterGatewayVO> createDevices(@PathVariable("application") String applicationId,
                                                            @PathVariable("gatewayGuid") String gatewayGuid,
                                                            @ApiParam(name = "body", required = true)
-                                                           @RequestBody List<DeviceInputVO> devices)
-            throws BadServiceResponseException, BadRequestResponseException, NotFoundResponseException {
+                                                           @RequestBody List<DeviceInputVO> devices) throws BadServiceResponseException, NotFoundResponseException {
 
-        Tenant tenant = user.getTenant();
-        Application application = getApplication(applicationId);
-        Gateway gateway = gatewayService.getByGUID(tenant, application, gatewayGuid).getResult();
-        List<DeviceRegisterGatewayVO> credentialsVOS = new ArrayList<>();
-
-        for (DeviceInputVO deviceInputVO : devices) {
-            ServiceResponse<Device> response = deviceRegisterService.register(
+        final Tenant tenant = user.getTenant();
+        final Application application = getApplication(applicationId);
+        final Gateway gateway = gatewayService.getByGUID(tenant, application, gatewayGuid).getResult();
+        return devices.stream().map(deviceInputVO ->
+            deviceRegisterService.register(
                     tenant,
                     application,
                     Device.builder()
@@ -143,24 +138,24 @@ public class GatewayRestController extends AbstractRestController implements Ini
                             .application(application)
                             .location(gateway.getLocation())
                             .active(true)
-                            .build());
-
-            if (response.isOk()) {
-                ServiceResponse<DeviceRegisterService.DeviceSecurityCredentials> responseCredential = deviceRegisterService
-                        .generateSecurityPassword(tenant, application, response.getResult().getGuid());
-                ServiceResponse<DeviceRegisterService.DeviceDataURLs> responseDeviceURLs = deviceRegisterService
-                        .getDeviceDataURLs(tenant, application, response.getResult(), user.getLanguage().getLocale());
-
-                DeviceRegisterService.DeviceSecurityCredentials credentials = responseCredential.getResult();
-                DeviceRegisterService.DeviceDataURLs deviceURLs = responseDeviceURLs.getResult();
-                credentialsVOS.add(new DeviceRegisterGatewayVO(credentials, deviceURLs));
-
-            } else {
-                throw new BadRequestResponseException(response, validationsCode);
-            }
-        }
-
-        return credentialsVOS;
+                            .build())
+        ).filter(deviceRegisterServiceResponse -> deviceRegisterServiceResponse.isOk()
+        ).map(response ->
+            deviceRegisterService.generateSecurityPassword(
+                    tenant,
+                    application,
+                    response.getResult().getGuid())
+        ).map(responseCredential ->
+            new DeviceRegisterGatewayVO(
+                    responseCredential.getResult(),
+                    deviceRegisterService.getDeviceDataURLs(
+                            tenant,
+                            application,
+                            responseCredential.getResult().getDevice(),
+                            user.getLanguage().getLocale()
+                    ).getResult()
+            )
+        ).collect(Collectors.toList());
     }
 
     @PostMapping

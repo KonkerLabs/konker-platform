@@ -9,7 +9,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TimeZoneTest {
 
-	@Test
 	public void shouldAllTimeZonesBeValid() {
 
 		boolean allValid = true;
