@@ -1,0 +1,12 @@
+{{- if .Values.configmap -}}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: { { include "konker-api.fullname" . } }
+  labels:
+    { { - include "konker-api.labels" . | nindent 4 } }
+data:
+{{- range $key, $value := .Values.configmap }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}
