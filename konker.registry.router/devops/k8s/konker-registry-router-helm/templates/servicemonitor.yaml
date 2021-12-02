@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "konker-registry-router-helm.fullname" . }}
+  labels:
+    app: {{ include "konker-registry-router-helm.name" . }}
+    chart: {{ include "konker-registry-router-helm.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    project: registry
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "konker-registry-router-helm.name" . }}
+  endpoints:
+  - port: http

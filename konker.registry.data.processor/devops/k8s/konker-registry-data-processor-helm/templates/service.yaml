@@ -14,6 +14,10 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    - port: 8090
+      targetPort: management
+      protocol: TCP
+      name: management
   selector:
     app: {{ include "konker-registry-data-processor-helm.name" . }}
     release: {{ .Release.Name }}
