@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "konker-registry-data-processor-helm.fullname" . }}
+  labels:
+    app: {{ include "konker-registry-data-processor-helm.name" . }}
+    chart: {{ include "konker-registry-data-processor-helm.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    project: registry
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "konker-registry-data-processor-helm.name" . }}
+  endpoints:
+  - port: management
