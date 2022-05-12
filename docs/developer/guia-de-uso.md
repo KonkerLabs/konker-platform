@@ -33,9 +33,11 @@ Um ponto de transformação permite que uma mensagem seja arbitrariamente manipu
 Antes de começar a enviar dados, o dispositivo precisa ser registrado na Plataforma Konker. O processo de registro é simples: a partir do Menu Principal, na tela de Dispositivos, basta adicionar um Novo Dispositivo.
 
 ![botao](./guia-dispositivos-0.png)
+
 ![novo](./guia-dispositivos-1.png)
 
 O cadastro é muito simples e rápido, basta informar:
+
 ![form](./guia-dispositivos-2.webp)
 
 
@@ -56,5 +58,6 @@ Clicando no botão "Gerar Senha", uma nova senha será gerada para aquele dispos
 IMPORTANTE: Quando a senha for gerada, copie e salve tanto o usuario quanto a senha em um local seguro. A Plataforma Konker não armazena essa senha por questões de segurança (armazena apenas o hash criptográfico) e portanto não é possível recuperá-la. Caso a senha seja perdida, uma nova senha deverá ser gerada.
 
 ![form](./guia-dispositivos-6.webp)
+
 Nesse exemplo específico, sempre que  o dispositivo precisar enviar dados (HTTP ou MQTT), deve usar como username bhh8ih0tj8di e senha 1Vab8FyqFro4. 
 Para os seus dispositivos, usuário e senha serão diferentes.
