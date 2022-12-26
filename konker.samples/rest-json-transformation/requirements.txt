@@ -4,4 +4,4 @@ itsdangerous==0.24
 Jinja2==2.11.3
 MarkupSafe==0.23
 Werkzeug==0.15.3
-wheel==0.29.0
+wheel==0.38.1
