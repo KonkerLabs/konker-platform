@@ -12,4 +12,4 @@ meld3==1.0.2
 requests==2.21.0
 supervisor==3.2.3
 urllib3==1.24.2
-Werkzeug==0.15.3
+Werkzeug==0.15.5
