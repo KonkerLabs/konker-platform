@@ -1,27 +1,25 @@
 version: "3.9"
 services:
   ## Networking
-  # networking_ingress:
-  #   image: nginx:latest
-  #   container_name: ingress
-  #   restart: unless-stopped
-  #   ports:
-  #     - 80:80
-  #     - 443:443
-  #   networks: 
-  #     - konker-platform-all-in-one
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-  #     - /nginx/ssl:/ssl/
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: "0.25"
-  #         memory: 128M
-  #       reservations:
-  #         cpus: "0.25"
-  #         memory: 128M
-​
+  networking_ingress:
+    image: nginx:latest
+    container_name: ingress
+    restart: unless-stopped
+    ports:
+      - 80:80
+    networks: 
+      - konker-platform-all-in-one
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+          
     ## Databases
   db_mongodb:
     image: mongo:3.2
@@ -240,13 +238,12 @@ services:
         reservations:
           cpus: "0.50"
           memory: 128M
-​
-​
-​
+
+
 ## Global
 volumes:
   mongodb_data_container:
   cassandra_data_container:
-​
+
 networks:
   konker-platform-all-in-one:
