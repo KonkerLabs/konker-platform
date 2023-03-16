@@ -114,8 +114,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 1024M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
           cpus: "0.50"
           memory: 512M
@@ -136,8 +136,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 1024M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
           cpus: "0.50"
           memory: 512M
@@ -158,14 +158,14 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 1024M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
           cpus: "0.50"
           memory: 512M
 ​
   platform_data_processor:
-    image: konkerlabs/konker-platform:registry-data-latest
+    image: konkerlabs/konker-platform:registry-data-processor-latest
     depends_on:
       - db_cassandra
       - db_mongodb
@@ -177,8 +177,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 1024M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
           cpus: "0.50"
           memory: 512M
@@ -198,8 +198,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 1024M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
           cpus: "0.50"
           memory: 512M
