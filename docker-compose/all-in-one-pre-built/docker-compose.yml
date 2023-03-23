@@ -32,7 +32,7 @@ services:
     networks:
       - konker-platform-all-in-one
     volumes:
-      #- mongodb_data_container:/data/db
+      - mongodb_data_container:/data/db
       - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
     deploy:
       resources:
@@ -42,7 +42,7 @@ services:
         reservations:
           cpus: "0.25"
           memory: 128M
-​
+
   db_cassandra:
     image: cassandra:2.0.17
     environment:
@@ -52,16 +52,7 @@ services:
     networks:
       - konker-platform-all-in-one
     volumes:
-      - cassandra_data_container:/var/lib/cassandra
-  # db_cassandra_init:
-  #   image: cassandra:2.0.17
-  #   depends_on:
-  #     - db_cassandra
-  #   restart: "no"
-  #   entrypoint: ["/init.sh"]
-  #   volumes:
-  #     - ./cassandra-init.sh:/init.sh
-​
+
   db_rabbitmq:
     image: rabbitmq:3.7-management-alpine
     env_file:
