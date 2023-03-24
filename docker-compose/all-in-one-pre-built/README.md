@@ -33,6 +33,12 @@ It's all, you now can check the services in the ports
 Using nginx for your domain
 Change the nginx/nginx.conf server_name for each webapp, api and data, then either test it by configuring your etc/hosts or making it public through your DNS server.
 
+Checking the instalation
+Check the docker-compose services status, all services should have a run status
+```
+docker-compose ps
+```
+
 
 Questions?
 Feel free to leave us an issue in Github, we are happy to support you.
