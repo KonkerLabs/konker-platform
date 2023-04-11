@@ -20,7 +20,7 @@ services:
           cpus: "0.25"
           memory: 128M
           
-    ## Databases
+  ## Databases
   db_mongodb:
     image: mongo:3.2
     environment:
@@ -71,7 +71,7 @@ services:
         reservations:
           cpus: "0.25"
           memory: 128M
-​
+
   db_redis:
     image: redis:6.2-alpine
     ports:
@@ -86,7 +86,7 @@ services:
         reservations:
           cpus: "0.25"
           memory: 128M
-​
+
   ## Konker Platform Services
   platform_webapp:
     image: konkerlabs/konker-platform:registry-webapp-latest
@@ -108,7 +108,7 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
-​
+  
   platform_api:
     image: konkerlabs/konker-platform:registry-api-latest
     depends_on:
@@ -130,7 +130,7 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
-​
+
   platform_data:
     image: konkerlabs/konker-platform:registry-data-latest
     depends_on:
@@ -152,7 +152,6 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
-​
   platform_data_processor:
     image: konkerlabs/konker-platform:registry-data-processor-latest
     depends_on:
@@ -171,7 +170,7 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
-​
+
   platform_router:
     image: konkerlabs/konker-platform:registry-router-latest
     depends_on:
@@ -192,6 +191,7 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
+  
   platform_mosquitto-rabbitmq-bridge:
     image: konkerlabs/konker-platform:registry-mqtt-bridge-latest
     depends_on:
@@ -211,19 +211,21 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
+
   platform_mosquitto:
     image: konkerlabs/konker-platform:registry-mqtt-latest
     ports:
       - 1883:1883
+      - 8883:8883
     networks:
       - konker-platform-all-in-one
     env_file:
       - .env
     volumes:
-      - ./mqtt/mosqutto.conf:/etc/mosquitto/mosquitto.conf:ro
-      - ./mqtt/ca.crt:/etc/mosquitto/ca.crt
-      - ./mqtt/server.crt:/etc/mosquitto/server.crt
-      - ./mqtt/server.crt:/etc/mosquitto/server.key
+      - ./mqtt/mosquitto.conf:/etc/mosquitto/mosquitto.conf:ro
+      - ./mqtt/ca.crt:/etc/mosquitto/ca.crt:ro
+      - ./mqtt/server.crt:/etc/mosquitto/server.crt:ro
+      - ./mqtt/server.key:/etc/mosquitto/server.key:ro
     deploy:
       resources:
         limits:
