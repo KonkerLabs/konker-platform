@@ -7,12 +7,10 @@ services:
     restart: unless-stopped
     ports:
       - 80:80
-      - 443:443
     networks: 
       - konker-platform-all-in-one
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - /nginx/ssl:/ssl/
     deploy:
       resources:
         limits:
@@ -21,19 +19,21 @@ services:
         reservations:
           cpus: "0.25"
           memory: 128M
-
+          
     ## Databases
   db_mongodb:
     image: mongo:3.2
     environment:
-      MONGO_INITDB_ROOT_USERNAME: user
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: Admin@2023
+      # MONGO_INITDB_DATABASE: admin
     ports:
       - 27017:27017
     networks:
       - konker-platform-all-in-one
     volumes:
       - mongodb_data_container:/data/db
+      - ./mongo-init.sh:/docker-entrypoint-initdb.d/mongo-init.sh:ro
     deploy:
       resources:
         limits:
@@ -43,22 +43,21 @@ services:
           cpus: "0.25"
           memory: 128M
 
-  # db_cassandra:
-  #   image: cassandra:latest
-  #   environment:
-  #     CASSANDRA_CLUSTER_NAME: konker-platform-all-in-one
-  #   ports:
-  #     - 9042:9042
-  #   networks:
-  #     - konker-platform-all-in-one
-  #   volumes:
-  #     - cassandra_data_container:/var/lib/cassandra
+  db_cassandra:
+    image: cassandra:2.0.17
+    environment:
+      CASSANDRA_CLUSTER_NAME: konker-platform-all-in-one
+    ports:
+      - 9042:9042
+    networks:
+      - konker-platform-all-in-one
+    volumes:
 
   db_rabbitmq:
     image: rabbitmq:3.7-management-alpine
-    environment:
-      RABBITMQ_DEFAULT_USER: root
-      RABBITMQ_DEFAULT_PASS: rootpassword
+    env_file:
+      - .env
+    
     ports:
       - 5672:5672
       - 15672:15672
@@ -67,12 +66,12 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 128M
+          cpus: "1.00"
+          memory: 256M
         reservations:
           cpus: "0.25"
           memory: 128M
-
+​
   db_redis:
     image: redis:6.2-alpine
     ports:
@@ -87,10 +86,14 @@ services:
         reservations:
           cpus: "0.25"
           memory: 128M
-
+​
   ## Konker Platform Services
   platform_webapp:
-    image: konkerlabs/konker-registry:demo-2.6.6-CAPPUCCINO
+    image: konkerlabs/konker-platform:registry-webapp-latest
+    depends_on:
+      - db_cassandra
+      - db_mongodb
+      - db_rabbitmq
     ports:
       - 8080:80
     networks:
@@ -100,14 +103,19 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 128M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
-          cpus: "0.25"
-          memory: 128M
-
+          cpus: "0.50"
+          memory: 512M
+​
   platform_api:
-    image: konkerlabs/konker-platform:konker.registry.api-1461461541
+    image: konkerlabs/konker-platform:registry-api-latest
+    depends_on:
+      - db_cassandra
+      - db_mongodb
+      - db_rabbitmq
+      - db_redis
     ports:
       - 8081:80
     networks:
@@ -117,14 +125,19 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 128M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
-          cpus: "0.25"
-          memory: 128M
-
+          cpus: "0.50"
+          memory: 512M
+​
   platform_data:
-    image: konkerlabs/konker-registry:demo-data-2.6.1-CAPPUCCINO
+    image: konkerlabs/konker-platform:registry-data-latest
+    depends_on:
+      - db_cassandra
+      - db_mongodb
+      - db_rabbitmq
+      - db_redis
     ports:
       - 8082:80
     networks:
@@ -134,14 +147,18 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 128M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
-          cpus: "0.25"
-          memory: 128M
-
+          cpus: "0.50"
+          memory: 512M
+​
   platform_data_processor:
-    image: konkerlabs/konker-registry:demo-data-2.6.1-CAPPUCCINO
+    image: konkerlabs/konker-platform:registry-data-processor-latest
+    depends_on:
+      - db_cassandra
+      - db_mongodb
+      - db_rabbitmq
     networks:
       - konker-platform-all-in-one
     env_file:
@@ -149,14 +166,18 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 128M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
-          cpus: "0.25"
-          memory: 128M
-
+          cpus: "0.50"
+          memory: 512M
+​
   platform_router:
-    image: konkerlabs/konker-registry:demo-router-2.6.0-CAPPUCCINO
+    image: konkerlabs/konker-platform:registry-router-latest
+    depends_on:
+      - db_cassandra
+      - db_mongodb
+      - db_rabbitmq
     ports:
       - 8083:80
     networks:
@@ -166,14 +187,17 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.50"
-          memory: 128M
+          cpus: "1.00"
+          memory: 2048M
         reservations:
-          cpus: "0.25"
-          memory: 128M
-
+          cpus: "0.50"
+          memory: 512M
+​
   platform_mosquitto-rabbitmq-bridge:
-    image: konkerlabs/mosquitto:bridge-0.2.2
+    image: konkerlabs/konker-platform:registry-mqtt-bridge-latest
+    depends_on:
+      - platform_mosquitto
+      - db_rabbitmq
     ports:
       - 10056:10056
     networks:
@@ -184,11 +208,29 @@ services:
       resources:
         limits:
           cpus: "0.50"
-          memory: 128M
+          memory: 1024M
         reservations:
-          cpus: "0.25"
+          cpus: "0.50"
+          memory: 512M
+​
+  platform_mosquitto:
+    image: konkerlabs/konker-platform:registry-mqtt-latest
+    ports:
+      - 1883:1883
+    networks:
+      - konker-platform-all-in-one
+    env_file:
+      - .env
+    volumes:
+      - ./mosqutto.conf:/etc/mosquitto/mosquitto.conf:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "0.50"
+          memory: 1024M
+        reservations:
+          cpus: "0.50"
           memory: 128M
-
 
 
 ## Global
