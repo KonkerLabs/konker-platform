@@ -192,7 +192,6 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
-​
   platform_mosquitto-rabbitmq-bridge:
     image: konkerlabs/konker-platform:registry-mqtt-bridge-latest
     depends_on:
@@ -212,7 +211,6 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
-​
   platform_mosquitto:
     image: konkerlabs/konker-platform:registry-mqtt-latest
     ports:
@@ -222,7 +220,10 @@ services:
     env_file:
       - .env
     volumes:
-      - ./mosqutto.conf:/etc/mosquitto/mosquitto.conf:ro
+      - ./mqtt/mosqutto.conf:/etc/mosquitto/mosquitto.conf:ro
+      - ./mqtt/ca.crt:/etc/mosquitto/ca.crt
+      - ./mqtt/server.crt:/etc/mosquitto/server.crt
+      - ./mqtt/server.crt:/etc/mosquitto/server.key
     deploy:
       resources:
         limits:
