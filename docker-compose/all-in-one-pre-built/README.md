@@ -39,6 +39,13 @@ Check the docker-compose services status, all services should have a run status
 docker-compose ps
 ```
 
+# MQTT TLS
+This configuration is using MQTT tls bind, which means mosquitto will open ports 1883 for standard connections and 8883 for tls connections. In order to have the right valid certificate, please replace the files bellow with your company certificates, otherwise tls will work but not ensure the correct way for your clients to make sure they are connecting to the right provider
+```
+mqtt/ca.crt
+mqtt/server.crt
+mqtt/server.key
+```
 
 Questions?
 Feel free to leave us an issue in Github, we are happy to support you.
