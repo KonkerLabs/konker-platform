@@ -221,6 +221,8 @@ services:
       - konker-platform-all-in-one
     env_file:
       - .env
+    volumes:
+      - ./mosqutto.conf:/etc/mosquitto/mosquitto.conf:ro
     deploy:
       resources:
         limits:
