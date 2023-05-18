@@ -5,12 +5,18 @@ services:
     image: nginx:latest
     container_name: ingress
     restart: unless-stopped
+    depends_on:
+      - platform_webapp
+      - platform_api
+      - platform_data
     ports:
       - 80:80
-    networks: 
+      - 443:443
+    networks:
       - konker-platform-all-in-one
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - /nginx/ssl:/ssl/
     deploy:
       resources:
         limits:
@@ -19,8 +25,8 @@ services:
         reservations:
           cpus: "0.25"
           memory: 128M
-          
-  ## Databases
+
+    ## Databases
   db_mongodb:
     image: mongo:3.2
     environment:
@@ -52,12 +58,21 @@ services:
     networks:
       - konker-platform-all-in-one
     volumes:
+      - cassandra_data_container:/var/lib/cassandra
+  db_cassandra_init:
+     image: cassandra:2.0.17
+     depends_on:
+       - db_cassandra
+     restart: "no"
+     entrypoint: ["/init.sh"]
+     volumes:
+       - ./cassandra-init.sh:/init.sh
 
   db_rabbitmq:
     image: rabbitmq:3.7-management-alpine
     env_file:
       - .env
-    
+
     ports:
       - 5672:5672
       - 15672:15672
@@ -89,13 +104,14 @@ services:
 
   ## Konker Platform Services
   platform_webapp:
-    image: konkerlabs/konker-platform:registry-webapp-latest
+    image: konkerlabs/konker-platform:registry-webapp-nosub
     depends_on:
       - db_cassandra
       - db_mongodb
       - db_rabbitmq
     ports:
       - 8080:80
+      - 8180:8080
     networks:
       - konker-platform-all-in-one
     env_file:
@@ -108,7 +124,7 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
-  
+
   platform_api:
     image: konkerlabs/konker-platform:registry-api-latest
     depends_on:
@@ -118,6 +134,7 @@ services:
       - db_redis
     ports:
       - 8081:80
+      - 8181:8080
     networks:
       - konker-platform-all-in-one
     env_file:
@@ -152,6 +169,7 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
+
   platform_data_processor:
     image: konkerlabs/konker-platform:registry-data-processor-latest
     depends_on:
@@ -191,7 +209,7 @@ services:
         reservations:
           cpus: "0.50"
           memory: 512M
-  
+
   platform_mosquitto-rabbitmq-bridge:
     image: konkerlabs/konker-platform:registry-mqtt-bridge-latest
     depends_on:
@@ -216,16 +234,21 @@ services:
     image: konkerlabs/konker-platform:registry-mqtt-latest
     ports:
       - 1883:1883
-      - 8883:8883
     networks:
       - konker-platform-all-in-one
     env_file:
       - .env
+    # y4k 12023-05-10, IDs not found
+    # environment:
+    #   - PUID=${PUID}
+    #   - PGID=${PGID}
     volumes:
       - ./mqtt/mosquitto.conf:/etc/mosquitto/mosquitto.conf:ro
-      - ./mqtt/ca.crt:/etc/mosquitto/ca.crt:ro
-      - ./mqtt/server.crt:/etc/mosquitto/server.crt:ro
-      - ./mqtt/server.key:/etc/mosquitto/server.key:ro
+      # - /opt/certificados/cert.pem:/etc/mosquitto/cert.pem:ro ## Enable tls
+      # - /opt/certificados/fullchain.pem:/etc/mosquitto/fullchain.pem:ro ## Enable tls
+      # - /opt/certificados/privkey.pem:/etc/mosquitto/privkey.pem:ro ## Enable tls
+      - ./mqtt/data:/var/lib/mosquitto
+
     deploy:
       resources:
         limits:
@@ -236,9 +259,11 @@ services:
           memory: 128M
 
 
+
 ## Global
 volumes:
   mongodb_data_container:
+    external: true
   cassandra_data_container:
 
 networks:
