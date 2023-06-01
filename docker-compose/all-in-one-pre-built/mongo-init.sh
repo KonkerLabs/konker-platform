@@ -17,6 +17,14 @@ db.createUser({
     roles: [{ role: 'dbOwner', db:'logs'}]
 });
 ​
+db = db.getSiblingDB('billing');
+​
+db.createUser({
+    user: 'konker',
+    pwd: 'Konker@2023',
+    roles: [{ role: 'dbOwner', db:'billing'}]
+});
+
 db = db.getSiblingDB('private-storage');
 ​
 db.createUser({
