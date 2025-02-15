@@ -1,8 +1,8 @@
 name: Build
-on:
-  push:
-    branches-ignore:
-      - 'release'
+#on:
+#  push:
+#    branches-ignore:
+#      - 'release'
 jobs:
   compile:
     name: Compile (JDK 13)
