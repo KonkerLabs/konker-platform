@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import com.amazonaws.util.Base64;
+//import com.amazonaws.util.Base64;
 import com.konkerlabs.platform.registry.business.model.User;
 import com.konkerlabs.platform.registry.business.repositories.UserRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
@@ -50,8 +50,8 @@ public class AvatarServiceImpl implements AvatarService {
     		String fileExt = base64File.split(",")[0].split("/")[1].split(";")[0];
     		String base64Content = base64File.split(",")[1];
     		
-    		InputStream is = new ByteArrayInputStream(Base64.decode(base64Content.getBytes()));
-
+    		//InputStream is = new ByteArrayInputStream(Base64.decode(base64Content.getBytes()));
+			InputStream is = new ByteArrayInputStream(base64Content.getBytes());
     		ServiceResponse<InputStream> resizeResponse =  cropAndResizeAvatar(is, fileExt);
     		if (!resizeResponse.isOk()) {
                 return ServiceResponseBuilder.<User>error()

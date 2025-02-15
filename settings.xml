@@ -1,0 +1,28 @@
+<settings>
+    <mirrors>
+        <mirror>
+        <id>releases.java.net-mirror</id>
+        <name>releases.java.net Mirror</name>
+        <url>https://maven.java.net/content/repositories/releases/</url>
+        <mirrorOf>releases.java.net</mirrorOf>
+        </mirror>
+    <mirror>
+        <id>shapshots.java.net-mirror</id>
+        <name>shapshots.java.net Mirror</name>
+        <url>https://maven.java.net/content/repositories/snapshots/</url>
+        <mirrorOf>shapshots.java.net</mirrorOf>
+    </mirror>
+    <mirror>
+        <id>jvnet-nexus-staging-mirror</id>
+        <name>jvnet-nexus-staging Mirror</name>
+        <url>https://maven.java.net/content/repositories/staging/</url>
+        <mirrorOf>jvnet-nexus-staging</mirrorOf>
+    </mirror>
+    <mirror>
+        <id>netbeans-mirror</id>
+        <name>netbeans Mirror</name>
+        <url>https://netbeans.apidesign.org/maven2/</url>
+        <mirrorOf>netbeans</mirrorOf>
+    </mirror>
+    </mirrors>
+</settings>

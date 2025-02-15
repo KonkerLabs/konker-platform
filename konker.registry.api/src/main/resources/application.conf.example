@@ -1,15 +1,12 @@
 mongo {
-  hostname = "CHANGE_ME"
+  hostname = "localhost"
   port = 27017
-  username = "CHANGE_ME"
-  password = "CHANGE_ME"
+
 }
 
 mongoAudit {
-  hostname = "CHANGE_ME"
+  hostname = "localhost"
   port = 27017
-  username = "CHANGE_ME"
-  password = "CHANGE_ME"
 }
 
 integration {

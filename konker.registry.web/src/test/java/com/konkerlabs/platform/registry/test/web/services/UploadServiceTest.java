@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.amazonaws.util.Base64;
+//import com.amazonaws.util.Base64;
 import com.konkerlabs.platform.registry.business.repositories.upload.AwsUploadRepository;
 import com.konkerlabs.platform.registry.business.services.api.ServiceResponse;
 import com.konkerlabs.platform.registry.config.CdnConfig;
@@ -65,7 +65,8 @@ public class UploadServiceTest extends BusinessLayerTestSupport {
 
     @Test
     public void shouldUploadInputStreamFile() {
-        InputStream is = new ByteArrayInputStream(Base64.decode(base64Img.getBytes()));
+        //InputStream is = new ByteArrayInputStream(Base64.decode(base64Img.getBytes()));
+        InputStream is = new ByteArrayInputStream(base64Img.getBytes());
         ServiceResponse<String> response = service.upload(is, fileName, "jpg", true);
         Assert.assertNotNull(response);
     }
@@ -102,13 +103,13 @@ public class UploadServiceTest extends BusinessLayerTestSupport {
                             return "filename";
                         }
                     });
-            when(awsUploadRepository.upload(any(InputStream.class), anyString(), anyString(), anyBoolean()))
-                    .thenAnswer(new Answer<String>() {
-                        @Override
-                        public String answer(InvocationOnMock invocationOnMock) {
-                            return "s34tst";
-                        }
-                    });
+//            when(awsUploadRepository.upload(any(InputStream.class), anyString(), anyString(), anyBoolean()))
+//                    .thenAnswer(new Answer<String>() {
+//                        @Override
+//                        public String answer(InvocationOnMock invocationOnMock) {
+//                            return "s34tst";
+//                        }
+//                    });
             when(awsUploadRepository.downloadAsBase64(anyString()))
                     .thenAnswer(new Answer<String>() {
                         @Override

@@ -9,6 +9,7 @@ CASSANDRA_PORT=9042
 MONGODB_PORT=27017
 MONGODB_AUDIT_PORT=27017
 MONGODB_PRIVATE_STORAGE_PORT=27017
+MONGODB_BILLING_PORT=27017
 PUB_SERVER_HTTP_PORT=80
 PUB_SERVER_HTTPS_PORT=443
 PUB_SERVER_MQTT_PORT=1883
@@ -20,7 +21,7 @@ INTEGRATION_TIMEOUT_DEFAULT=3000
 INTEGRATION_TIMEOUT_ENRICHMENT=3000
 INTEGRATION_TIMEOUT_SMS=3000
 EMAIL_PORT=587
-AMAZON_KINESIS_ENABLED=true
+AMAZON_KINESIS_ENABLED=false
 EMAIL_ENABLED=true
 SWAGGER_PORT=443
 
@@ -64,6 +65,11 @@ echo "#### password: *****"
 echo "## MongoDB Private Storage"
 echo "#### host: $MONGODB_PRIVATE_STORAGE_HOSTNAME"
 echo "#### port: $MONGODB_PRIVATE_STORAGE_PORT"
+echo "####user: ******"
+echo "#### password: *****"
+echo "## MongoDB Billing"
+echo "#### host: $MONGODB_BILLING_HOSTNAME"
+echo "#### port: $MONGODB_BILLING_STORAGE_PORT"
 echo "####user: ******"
 echo "#### password: *****"
 echo "## EventStorage: $EVENT_STORAGE_BEAN"
@@ -128,6 +134,10 @@ java -Dconfig.file=/var/lib/konker/application.conf \
     -DmongoPrivateStorage.port=$MONGODB_PRIVATE_STORAGE_PORT \
     -DmongoPrivateStorage.username=$MONGODB_PRIVATE_STORAGE_USERNAME \
     -DmongoPrivateStorage.password=$MONGODB_PRIVATE_STORAGE_PASSWORD \
+    -DmongoBilling.hostname=$MONGODB_BILLING_HOSTNAME \
+    -DmongoBilling.port=$MONGODB_BILLING_PORT \
+    -DmongoBilling.username=$MONGODB_BILLING_USERNAME \
+    -DmongoBilling.password=$MONGODB_BILLING_PASSWORD \
     -Deventstorage.bean=$EVENT_STORAGE_BEAN \
     -Dcassandra.clustername=$CASSANDRA_CLUSTERNAME \
     -Dcassandra.keyspace=$CASSANDRA_KEYSPACE \

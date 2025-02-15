@@ -34,10 +34,10 @@ public class CassandraRegistryConfig {
     public Cluster cluster() {
 
         Map<String, Object> defaultMap = new HashMap<>();
-        defaultMap.put("cassandra.keyspace", "registrykeyspace");
-        defaultMap.put("cassandra.hostname", "localhost");
-        defaultMap.put("cassandra.username", "");
-        defaultMap.put("cassandra.password", "");
+        defaultMap.put("cassandra.keyspace", "registry");
+        defaultMap.put("cassandra.hostname", "cassandra");
+        defaultMap.put("cassandra.username", "user");
+        defaultMap.put("cassandra.password", "bitnami");
         defaultMap.put("cassandra.port", 9042);
         defaultMap.put("cassandra.datacenter", "datacenter1");
         defaultMap.put("cassandra.nodeToUseFromRemote", 0);

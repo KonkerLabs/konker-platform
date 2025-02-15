@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk13:alpine-jre
+FROM adoptopenjdk/openjdk8:alpine-jre
 
 LABEL maintainer="Andre Rocha <andre@konkerlabs.com>"
 LABEL service_name="konker-http-data"
@@ -14,7 +14,7 @@ WORKDIR $KONKER_BASE
 COPY docker-resources/docker-entrypoint.sh /
 RUN chmod 777 /docker-entrypoint.sh
 
-COPY docker-resources/dist/registry-data-processor.jar $KONKER_BASE/
+COPY target/registry-data-processor.jar $KONKER_BASE/
 COPY docker-resources/dist/application.conf.example $KONKER_BASE/application.conf
 COPY docker-resources/dist/logback.xml $KONKER_BASE/
 

@@ -45,14 +45,14 @@ public class RabbitMQConfig {
 
     public RabbitMQConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
-        defaultMap.put("rabbitmq.hostname", "localhost");
-        defaultMap.put("rabbitmq.apihost", "localhost");
+        defaultMap.put("rabbitmq.hostname", "rabbitmq");
+        defaultMap.put("rabbitmq.apihost", "rabbitmq");
         defaultMap.put("rabbitmq.apiport", "8083");
-        defaultMap.put("rabbitmq.apiusername", "guest");
-        defaultMap.put("rabbitmq.apipassword", "guest");
-        defaultMap.put("rabbitmq.username", "");
-        defaultMap.put("rabbitmq.password", "");
-        defaultMap.put("rabbitmq.virtualHost", "");
+        defaultMap.put("rabbitmq.apiusername", "user");
+        defaultMap.put("rabbitmq.apipassword", "bitnami");
+        defaultMap.put("rabbitmq.username", "user");
+        defaultMap.put("rabbitmq.password", "bitnami");
+        defaultMap.put("rabbitmq.virtualHost", "/");
 
         Config defaultConf = ConfigFactory.parseMap(defaultMap);
         Config config = ConfigFactory.load().withFallback(defaultConf);

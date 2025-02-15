@@ -8,20 +8,21 @@ var options = {
   clientId: 'sensor-test-01',
   rejectUnauthorized: false,
   reconnectPeriod: 5000,
-  username: '<username>',
-  password: '<passwowrd>'
+  username: 'ctca2j7pctns',
+  password: 'FXNgSZrxucrR'
 };
 
-var client  = mqtt.connect('mqtt://<hostname>:<port>', options);
+var client  = mqtt.connect('mqtt://localhost:1883', options);
 
 var timer = setInterval(function(c) {
     var message = {
-       deviceId: 'temperature',
+       deviceId: 'ctca2j7pctns',
+       temp: Math.floor((Math.random() * 100)),
        timestamp: new Date().getTime() ,
        randomValue: Math.floor((Math.random() * 100))
     }
     console.log("Will publish " + JSON.stringify(message))
-    client.publish('konker/device/device1/command', JSON.stringify(message));
+    client.publish('pub/ctca2j7pctns/temperature', JSON.stringify(message));
   }, 5000, client);
 
 client.on('connect', function () {

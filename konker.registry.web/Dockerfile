@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk13:alpine-jre
+FROM adoptopenjdk/openjdk11:alpine-jre
 
 
 MAINTAINER Andre Rocha <andre@konkerlabs.com>
@@ -75,7 +75,7 @@ RUN set -xe \
 COPY docker-resources/docker-entrypoint.sh /
 RUN chmod 777 /docker-entrypoint.sh
 
-COPY docker-resources/dist/registry.war /var/lib/jetty/webapps/
+COPY target/registry.war /var/lib/jetty/webapps/
 COPY docker-resources/dist/application.conf.example /var/lib/jetty/resources/application.conf
 COPY docker-resources/dist/logback.xml /var/lib/jetty/webapps/resources/
 COPY docker-resources/dist/logback.xml /var/lib/jetty/resources/

@@ -31,7 +31,7 @@ public class RedisConfig {
     
 	public RedisConfig() {
 		Map<String, Object> defaultMap = new HashMap<>();
-		defaultMap.put("redis.master.host", "localhost");
+		defaultMap.put("redis.master.host", "redis");
 		defaultMap.put("redis.master.port", 6379);
 		Config defaultConf = ConfigFactory.parseMap(defaultMap);
 

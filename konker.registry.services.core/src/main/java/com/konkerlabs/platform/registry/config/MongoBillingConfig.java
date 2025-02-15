@@ -45,10 +45,10 @@ public class MongoBillingConfig extends AbstractMongoConfiguration {
     
     public MongoBillingConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
-    	defaultMap.put("mongoBilling.hostname", "localhost");
+    	defaultMap.put("mongoBilling.hostname", "mongodb");
     	defaultMap.put("mongoBilling.port", 27017);
-    	defaultMap.put("mongoBilling.username", "");
-    	defaultMap.put("mongoBilling.password", "");
+    	defaultMap.put("mongoBilling.username", "registry");
+    	defaultMap.put("mongoBilling.password", "registry");
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
     	Config config = ConfigFactory.load().withFallback(defaultConf);

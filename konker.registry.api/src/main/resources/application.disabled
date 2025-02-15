@@ -1,0 +1,56 @@
+mongo {
+  hostname = "mongodb"
+  port = 27017
+  username = "registry"
+  password = "registry"
+
+}
+
+mongoAudit {
+  hostname = "mongodb"
+  port = 27017
+  username = "registry"
+  password = "registry"
+}
+
+integration {
+    timeout: [
+        {
+            default = 3000
+            enrichment = 3000
+            sms = 3000
+        }
+    ]
+}
+
+password.user {
+  hash.algorithm = "SHA256"
+  salt.size = 16
+  iterations = 10000
+}
+
+eventstorage {
+    bean="cassandraEvents"
+}
+
+cassandra {
+    clustername = "konker"
+    keyspace = "registry"
+    hostname = "cassandra"
+    username = "cassandra"
+    password = "cassandra"
+    port=9042
+}
+
+swagger {
+    hostname: "localhost"
+    protocol: "http"
+    port: "8081"
+}
+
+redis {
+    master {
+        host: "localhost"
+        port: "6379"
+    }
+}

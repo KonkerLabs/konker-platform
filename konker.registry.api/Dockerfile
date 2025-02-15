@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk13:alpine-jre
+FROM adoptopenjdk/openjdk8:alpine-jre
 
 LABEL maintainer="Andre Rocha <andre@konkerlabs.com>"
 
@@ -13,7 +13,7 @@ WORKDIR $KONKER_BASE
 COPY docker-resources/docker-entrypoint.sh /
 RUN chmod 777 /docker-entrypoint.sh
 
-COPY docker-resources/dist/registry-api.jar /var/lib/konker/
+COPY target/registry-api.jar /var/lib/konker/
 COPY docker-resources/dist/application.conf /var/lib/konker/
 COPY docker-resources/dist/logback.xml /var/lib/konker/
 

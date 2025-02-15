@@ -46,7 +46,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
 
     public MongoConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
-        defaultMap.put("mongo.hostname", "localhost");
+        defaultMap.put("mongo.hostname", "mongodb");
         defaultMap.put("mongo.port", 27017);
         defaultMap.put("mongo.username", "");
         defaultMap.put("mongo.password", "");

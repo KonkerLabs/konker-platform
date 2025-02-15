@@ -41,6 +41,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     private static final String SWAGGER_HOSTNAME = "swagger.hostname";
     private static final String SWAGGER_PROTOCOL = "swagger.protocol";
+    private static final String SWAGGER_PORT = "swagger.port";
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
@@ -68,6 +69,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
                 .apiInfo(apiInfo())
                 .securitySchemes(newArrayList(securitySchema()))
                 .securityContexts(newArrayList(securityContext()))
+                .host("localhost:8080")
                 // .operationOrdering(getOperationOrdering()) try with swagger 2.7.0
                 .tags(
                         new Tag("alert triggers", "Operations to manage alert triggers"),
@@ -149,6 +151,7 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
         Config config = getSwaggerConfig();
         String hostname = config.getString(SWAGGER_HOSTNAME);
+        String port = config.getString(SWAGGER_PORT);
 
         try {
             InputStream is = new ClassPathResource("description.md").getInputStream();
@@ -174,8 +177,9 @@ public class SwaggerUIConfig extends WebMvcConfigurerAdapter {
 
     private Config getSwaggerConfig() {
         Map<String, Object> defaultMap = new HashMap<>();
-        defaultMap.put(SWAGGER_HOSTNAME, "localhost:8080");
+        defaultMap.put(SWAGGER_HOSTNAME, "localhost");
         defaultMap.put(SWAGGER_PROTOCOL, "http");
+        defaultMap.put(SWAGGER_PORT, "8080");
         Config defaultConf = parseMap(defaultMap);
 
         return load().withFallback(defaultConf);

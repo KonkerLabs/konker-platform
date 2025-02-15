@@ -1,0 +1,66 @@
+#db.createUser(
+#{
+#    user: "registry",
+#    pwd: "registry",
+#    roles: [
+#              { role: "userAdminAnyDatabase", db: "admin" },
+#              { role: "readWriteAnyDatabase", db: "admin" },
+#              { role: "dbAdminAnyDatabase", db: "admin" },
+#              { role: "clusterAdmin", db: "admin" }
+#           ]
+#})
+
+###################################################################################
+docker exec -it run-it-locally-mongodb-1 bash
+mongo -u root -p mongo --authenticationDatabase=admin
+
+use registry;
+db.createUser(
+{
+    user: "registry",
+    pwd: "registry",
+    roles: [
+              { role: "dbOwner", db: "registry" }
+           ]
+});
+
+use logs;
+db.createUser(
+{
+    user: "registry",
+    pwd: "registry",
+    roles: [
+              { role: "dbOwner", db: "logs" }
+           ]
+});
+
+use billing;
+db.createUser(
+{
+    user: "registry",
+    pwd: "registry",
+    roles: [
+              { role: "dbOwner", db: "billing" }
+           ]
+});
+
+use private-storage;
+db.createUser(
+{
+    user: "registry",
+    pwd: "registry",
+    roles: [
+              { role: "dbOwner", db: "private-storage" }
+           ]
+});
+
+docker inspect run-it-locally-cassandra-1
+
+docker compose up -d --build api
+
+########################################################################################
+  CREATE KEYSPACE registry 
+  WITH REPLICATION = { 
+   'class' : 'SimpleStrategy', 
+   'datacenter1' : 1 
+  } ;

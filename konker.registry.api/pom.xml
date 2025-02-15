@@ -42,6 +42,26 @@
             </exclusions>
         </dependency>
         <!-- Spring Boot -->
+        <!-- JAXB API only -->
+        <!-- JAXB RI, Jakarta XML Binding -->
+        <!-- <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.3</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>2.3.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-ri</artifactId>
+            <version>2.3.3</version>
+        </dependency> -->
+        <!-- JAXB RI, Jakarta XML Binding -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -176,8 +196,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <source>13</source>
-                    <target>13</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
                 <dependencies>
                     <dependency>

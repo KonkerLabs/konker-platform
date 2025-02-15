@@ -38,10 +38,10 @@ public class MongoPrivateStorageConfig extends AbstractMongoConfiguration {
 
     public MongoPrivateStorageConfig() {
     	Map<String, Object> defaultMap = new HashMap<>();
-    	defaultMap.put("mongoPrivateStorage.hostname", "localhost");
+    	defaultMap.put("mongoPrivateStorage.hostname", "mongodb");
     	defaultMap.put("mongoPrivateStorage.port", 27017);
-    	defaultMap.put("mongoPrivateStorage.username", "");
-    	defaultMap.put("mongoPrivateStorage.password", "");
+    	defaultMap.put("mongoPrivateStorage.username", "registry");
+    	defaultMap.put("mongoPrivateStorage.password", "registry");
     	Config defaultConf = ConfigFactory.parseMap(defaultMap);
 
     	Config config = ConfigFactory.load().withFallback(defaultConf);

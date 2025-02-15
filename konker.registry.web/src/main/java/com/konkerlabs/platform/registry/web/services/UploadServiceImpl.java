@@ -19,7 +19,7 @@ import java.util.UUID;
 public class UploadServiceImpl implements UploadService {
 
 
-    @Autowired
+    //@Autowired
     private AwsUploadRepository repository;
 
     public UploadServiceImpl() {
@@ -80,7 +80,7 @@ public class UploadServiceImpl implements UploadService {
     @Override
     public ServiceResponse<String> upload(InputStream file, String fileName, String ext, boolean isPublic) {
         try {
-            String uploadResult = repository.upload(file, getUniqueFileName(null), ext, isPublic);
+            String uploadResult = repository.upload("file", getUniqueFileName(null), ext, isPublic);
             return ServiceResponseBuilder
                     .<String>ok()
                     .withResult(uploadResult)
