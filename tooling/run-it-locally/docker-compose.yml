@@ -117,12 +117,12 @@ services:
 
       RABBITMQ_HOSTNAME: "rabbitmq"
       RABBITMQ_API_HOST: "rabbitmq"
-      #RABBITMQ_APIPORT: "5672"
-      RABBITMQ_APIUSERNAME: "user"
-      RABBITMQ_APIPASSWORD: "bitnami"
+      RABBITMQ_API_PORT: "15672"
+      RABBITMQ_API_USERNAME: "user"
+      RABBITMQ_API_PASSWORD: "bitnami"
       RABBITMQ_USERNAME: "user"
       RABBITMQ_PASSWORD: "bitnami"
-      RABBITMQ_VHOST: "/"
+      RABBITMQ_VIRTUALHOST: "/"
       
       EVENT_STORAGE_BEAN: cassandra
       CASSANDRA_CLUSTERNAME: registry
@@ -165,12 +165,12 @@ services:
 
       RABBITMQ_HOSTNAME: "rabbitmq"
       RABBITMQ_API_HOST: "rabbitmq"
-      #RABBITMQ_APIPORT: "5672"
-      RABBITMQ_APIUSERNAME: "user"
-      RABBITMQ_APIPASSWORD: "bitnami"
+      RABBITMQ_API_PORT: "15672"
+      RABBITMQ_API_USERNAME: "user"
+      RABBITMQ_API_PASSWORD: "bitnami"
       RABBITMQ_USERNAME: "user"
       RABBITMQ_PASSWORD: "bitnami"
-      RABBITMQ_VHOST: "/"
+      RABBITMQ_VIRTUALHOST: "/"
       
       EVENT_STORAGE_BEAN: cassandra
       CASSANDRA_CLUSTERNAME: registry
@@ -213,12 +213,12 @@ services:
 
       RABBITMQ_HOSTNAME: "rabbitmq"
       RABBITMQ_API_HOST: "rabbitmq"
-      #RABBITMQ_APIPORT: "5672"
-      RABBITMQ_APIUSERNAME: "user"
-      RABBITMQ_APIPASSWORD: "bitnami"
+      RABBITMQ_API_PORT: "15672"
+      RABBITMQ_API_USERNAME: "user"
+      RABBITMQ_API_PASSWORD: "bitnami"
       RABBITMQ_USERNAME: "user"
       RABBITMQ_PASSWORD: "bitnami"
-      RABBITMQ_VHOST: "/"
+      RABBITMQ_VIRTUALHOST: "/"
       
       EVENT_STORAGE_BEAN: cassandra
       CASSANDRA_CLUSTERNAME: registry
