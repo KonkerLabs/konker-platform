@@ -1,0 +1,12 @@
+{{- if .Values.configmap -}}
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "konker-router.fullname" . }}
+  labels:
+    {{- include "konker-router.labels" . | nindent 4 }}
+data:
+{{- range $key, $value := .Values.configmap }}
+  {{ $key }}: {{ $value | quote }}
+{{- end }}
+{{- end }}

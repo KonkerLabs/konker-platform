@@ -1,0 +1,8 @@
+[[ #{greeting(${name})} ]]
+
+<br/>
+[[ ${body} ]] 
+
+<br/><br/>
+[[ #{regards} ]],<br/>
+    The Konkerlabs Team
