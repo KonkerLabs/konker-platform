@@ -1,9 +1,0 @@
-services:
-  cassandra:
-    image: "bitnami/cassandra:3.11.1-r3"
-    ports:
-     - "9042:9042"
-     - "7000:7000"
-    environment:
-      CASSANDRA_STARTUP_CQL: "CREATE KEYSPACE registry WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };"
-    network_mode: host

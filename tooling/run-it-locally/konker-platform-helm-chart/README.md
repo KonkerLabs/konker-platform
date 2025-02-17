@@ -1,1 +1,0 @@
-# Run Konker Platform in your local environment using a single helm

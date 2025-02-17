@@ -8,8 +8,8 @@ var options = {
   clientId: 'actor-test-01',
   rejectUnauthorized: false,
   reconnectPeriod: 5000,
-  username: '843a8kjb9v8i',
-  password: 'ie2JXVic6gPc'
+  username: 'ol0kj8rceb5o',
+  password: 'Peh2JwNUa58R'
 };
 
 var client  = mqtt.connect('mqtt://localhost:1883', options);
@@ -17,7 +17,7 @@ var client  = mqtt.connect('mqtt://localhost:1883', options);
  
 client.on('connect', function () {
   console.log("Connected!")
-  client.subscribe('sub/843a8kjb9v8i/temp');
+  client.subscribe('sub/ol0kj8rceb5o/receive');
   //client.subscribe('konker/device/device3/data');
 });
  

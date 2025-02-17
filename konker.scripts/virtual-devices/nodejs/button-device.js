@@ -8,21 +8,21 @@ var options = {
   clientId: 'sensor-test-01',
   rejectUnauthorized: false,
   reconnectPeriod: 5000,
-  username: 'ctca2j7pctns',
-  password: 'FXNgSZrxucrR'
+  username: 'dmtde7b6ge8r',
+  password: 'N2I3Z4I13TrS'
 };
 
 var client  = mqtt.connect('mqtt://localhost:1883', options);
 
 var timer = setInterval(function(c) {
     var message = {
-       deviceId: 'ctca2j7pctns',
+       deviceId: 'dmtde7b6ge8r',
        temp: Math.floor((Math.random() * 100)),
        timestamp: new Date().getTime() ,
        randomValue: Math.floor((Math.random() * 100))
     }
     console.log("Will publish " + JSON.stringify(message))
-    client.publish('pub/ctca2j7pctns/temperature', JSON.stringify(message));
+    client.publish('pub/dmtde7b6ge8r/send', JSON.stringify(message));
   }, 5000, client);
 
 client.on('connect', function () {
