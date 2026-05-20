@@ -3,13 +3,17 @@ networks:
     driver: bridge
 services:
   rabbitmq:
-    image: "bitnami/rabbitmq:3.7.3-r3"
+    image: "rabbitmq:management"
     container_name: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "8083:8083"
     networks:
       - registry
+    environment:
+      RABBITMQ_DEFAULT_USER: rabbitmq
+      RABBITMQ_DEFAULT_PASS: rabbitmq
   redis:
     image: "redis:4.0-alpine"
     container_name: redis
@@ -18,7 +22,7 @@ services:
     networks:
       - registry
   mongodb:
-    image: "bitnami/mongodb:3.4.10-r0"
+    image: "mongo:3.4.10"
     container_name: mongodb
     networks:
       - registry
@@ -27,6 +31,8 @@ services:
     environment:
       MONGODB_ROOT_PASSWORD: mongo
       ALLOW_EMPTY_PASSWORD: yes
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mongo
     
   # mongo_createdb:
   #   links:
@@ -44,18 +50,36 @@ services:
   #   volumes:
   #     - ./scripts:/app
   
-  init-database:
-    build: ../init-database/
-    container_name: init-database
+  ######################################################################################################################################################
+  # Enable the addusers block if you need to bootstrap the mongodb database
+  ######################################################################################################################################################
+  #init-database:
+  #  build: ../init-database/
+  #  container_name: init-database
+  #  networks:
+  #    - registry
+  #  depends_on:
+  #    - mongodb
+  #  links:
+  #    - mongodb
+  ######################################################################################################################################################
+
+  ######################################################################################################################################################
+  # Enable the addusers block if you want to create users based on a txt file, each user must be in one line
+  ######################################################################################################################################################
+  addusers:
+    build: ../addusers/
+    container_name: addusers
     networks:
-      - registry
+     - registry
     depends_on:
       - mongodb
     links:
       - mongodb
+  ######################################################################################################################################################
 
   cassandra:
-    image: "bitnami/cassandra:3.11.1-r3"
+    image: "cassandra:3.11.19"
     container_name: cassandra
     ports:
      - "9042:9042"
@@ -70,22 +94,25 @@ services:
       CASSANDRA_DATACENTER: "datacenter1"
   
   mosquitto:
-    image: "eclipse/mosquitto:1.4.8"
+    #image: "konkerlabs/mosquitto:1.8.0"
+    image: "eclipse-mosquitto:1.6.15"
     container_name: mosquitto
     ports:
      - "1883:1883"
     networks:
       - registry
-    #environment:
-      # CASSANDRA_STARTUP_CQL: "CREATE KEYSPACE registry WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 };"
-      # CASSANDRA_CLUSTER_NAME: "registry"
-      # #CASSANDRA_USER: "registry" 
-      # #CASSANDRA_PASSWORD: "registry"
-      # CASSANDRA_DATACENTER: "datacenter1"
+    environment:
+      MONGODB_URL: "mongodb://registry:registry@mongodb/registry?authSource=registry&minPoolSize=5"
+      MONGODB_DATABASE: "registry"
+      SUPERUSER_SUB_USERNAME: registry
+      SUPERUSER_SUB_SECRET: "PBKDF2$sha256$1000000$oeks5948KfL1TpUbzrHqhw==$TbRvz1vP5OSBQk8clE5j8QWpoU+gEDBTRjYSfwjdHc4="
+      SUPERUSER_PUB_USERNAME: registry
+      SUPERUSER_PUB_SECRET: "PBKDF2$sha256$1000000$oeks5948KfL1TpUbzrHqhw==$TbRvz1vP5OSBQk8clE5j8QWpoU+gEDBTRjYSfwjdHc4="
+
 
   api:
-    #image: "konkerlabs/konker-platform:konker.registry.api-5144526589"
-    build: ../../../konker.registry.api/
+    image: "konkerlabs/konker-registry:konker.registry.api-1454482032"
+    #build: ../../../konker.registry.api/
     container_name: api
     links:
      - mongodb
@@ -96,23 +123,54 @@ services:
       - "8080:8080"
     networks:
       - registry
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       #SWAGGER_HOSTNAME: "localhost:8080"
       #SWAGGER_PROTOCOL: "http"
       PUB_SERVER_SSL_ENABLED: "false"
 
-      MONGODB_AUDIT_HOSTNAME: "mongodb"
+      MONGODB_AUDIT_HOSTNAME: mongodb
+      MONGODB_AUDIT_PORT: 27017
       MONGODB_AUDIT_USERNAME: "registry"
       MONGODB_AUDIT_PASSWORD: "registry"
-      MONGODB_BILLING_HOSTNAME: "mongodb"
+
+      MONGO_AUDIT_HOSTNAME: mongodb
+      MONGO_AUDIT_PORT: 27017
+      MONGO_AUDIT_USERNAME: "registry"
+      MONGO_AUDIT_PASSWORD: "registry"
+      
+      MONGO_BILLING_HOSTNAME: mongodb
+      MONGO_BILLING_PORT: 27017
+      MONGO_BILLING_USERNAME: "registry"
+      MONGO_BILLING_PASSWORD: "registry"
+
+      MONGODB_BILLING_HOSTNAME: mongodb
+      MONGODB_BILLING_PORT: 27017
       MONGODB_BILLING_USERNAME: "registry"
       MONGODB_BILLING_PASSWORD: "registry"
+      
       MONGODB_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGODB_PRIVATE_STORAGE_PORT: 27017
       MONGODB_PRIVATE_STORAGE_USERNAME: "registry"
       MONGODB_PRIVATE_STORAGE_PASSWORD: "registry"
-      MONGODB_HOSTNAME: "mongodb"
+
+      MONGO_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGO_PRIVATE_STORAGE_PORT: 27017
+      MONGO_PRIVATE_STORAGE_USERNAME: "registry"
+      MONGO_PRIVATE_STORAGE_PASSWORD: "registry"
+      
+      MONGODB_HOSTNAME: mongodb
       MONGODB_USERNAME: "registry"
       MONGODB_PASSWORD: "registry"
+      MONGODB_PORT: 27017
+
+      MONGO_HOSTNAME: mongodb
+      MONGO_USERNAME: "registry"
+      MONGO_PASSWORD: "registry"
+      MONGO_PORT: 27017
 
       REDIS_HOSTNAME: "redis"
       REDIS_PORT: "6379"
@@ -120,10 +178,10 @@ services:
       RABBITMQ_HOSTNAME: "rabbitmq"
       RABBITMQ_API_HOST: "rabbitmq"
       RABBITMQ_API_PORT: "15672"
-      RABBITMQ_API_USERNAME: "user"
-      RABBITMQ_API_PASSWORD: "bitnami"
-      RABBITMQ_USERNAME: "user"
-      RABBITMQ_PASSWORD: "bitnami"
+      RABBITMQ_API_USERNAME: "rabbitmq"
+      RABBITMQ_API_PASSWORD: "rabbitmq"
+      RABBITMQ_USERNAME: "rabbitmq"
+      RABBITMQ_PASSWORD: "rabbitmq"
       RABBITMQ_VIRTUALHOST: "/"
       
       EVENT_STORAGE_BEAN: "cassandraEvents"
@@ -134,8 +192,8 @@ services:
       CASSANDRA_USERNAME: "cassandra"
       CASSANDRA_PASSWORD: "cassandra"
   data:
-    #image: "konkerlabs/konker-platform:konker.registry.api-5144526589"
-    build:  ../../../konker.registry.data/
+    image: "konkerlabs/konker-registry:konker.registry.data-1454482032"
+    #build:  ../../../konker.registry.data/
     container_name: data
     links:
      - mongodb
@@ -146,21 +204,52 @@ services:
       - "8181:8080"
     networks:
       - registry
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       PUB_SERVER_SSL_ENABLED: "false"
 
-      MONGODB_AUDIT_HOSTNAME: "mongodb"
+      MONGODB_AUDIT_HOSTNAME: mongodb
+      MONGODB_AUDIT_PORT: 27017
       MONGODB_AUDIT_USERNAME: "registry"
       MONGODB_AUDIT_PASSWORD: "registry"
-      MONGODB_BILLING_HOSTNAME: "mongodb"
+
+      MONGO_AUDIT_HOSTNAME: mongodb
+      MONGO_AUDIT_PORT: 27017
+      MONGO_AUDIT_USERNAME: "registry"
+      MONGO_AUDIT_PASSWORD: "registry"
+      
+      MONGO_BILLING_HOSTNAME: mongodb
+      MONGO_BILLING_PORT: 27017
+      MONGO_BILLING_USERNAME: "registry"
+      MONGO_BILLING_PASSWORD: "registry"
+
+      MONGODB_BILLING_HOSTNAME: mongodb
+      MONGODB_BILLING_PORT: 27017
       MONGODB_BILLING_USERNAME: "registry"
       MONGODB_BILLING_PASSWORD: "registry"
+      
       MONGODB_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGODB_PRIVATE_STORAGE_PORT: 27017
       MONGODB_PRIVATE_STORAGE_USERNAME: "registry"
       MONGODB_PRIVATE_STORAGE_PASSWORD: "registry"
-      MONGODB_HOSTNAME: "mongodb"
+
+      MONGO_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGO_PRIVATE_STORAGE_PORT: 27017
+      MONGO_PRIVATE_STORAGE_USERNAME: "registry"
+      MONGO_PRIVATE_STORAGE_PASSWORD: "registry"
+      
+      MONGODB_HOSTNAME: mongodb
       MONGODB_USERNAME: "registry"
       MONGODB_PASSWORD: "registry"
+      MONGODB_PORT: 27017
+
+      MONGO_HOSTNAME: mongodb
+      MONGO_USERNAME: "registry"
+      MONGO_PASSWORD: "registry"
+      MONGO_PORT: 27017
 
       REDIS_HOSTNAME: "redis"
       REDIS_PORT: "6379"
@@ -168,10 +257,10 @@ services:
       RABBITMQ_HOSTNAME: "rabbitmq"
       RABBITMQ_API_HOST: "rabbitmq"
       RABBITMQ_API_PORT: "15672"
-      RABBITMQ_API_USERNAME: "user"
-      RABBITMQ_API_PASSWORD: "bitnami"
-      RABBITMQ_USERNAME: "user"
-      RABBITMQ_PASSWORD: "bitnami"
+      RABBITMQ_API_USERNAME: "rabbitmq"
+      RABBITMQ_API_PASSWORD: "rabbitmq"
+      RABBITMQ_USERNAME: "rabbitmq"
+      RABBITMQ_PASSWORD: "rabbitmq"
       RABBITMQ_VIRTUALHOST: "/"
       
       EVENT_STORAGE_BEAN: "cassandraEvents"
@@ -182,8 +271,8 @@ services:
       CASSANDRA_USERNAME: "cassandra"
       CASSANDRA_PASSWORD: "cassandra"
   data-processor:
-    #image: "konkerlabs/konker-platform:konker.registry.api-5144526589"
-    build:  ../../../konker.registry.data.processor/
+    image: "konkerlabs/konker-registry:konker.registry.data.processor-1454482032"
+    #build:  ../../../konker.registry.data.processor/
     container_name: data-processor
     links:
       - mongodb
@@ -194,21 +283,52 @@ services:
       - "8282:8080"
     networks:
       - registry
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       PUB_SERVER_SSL_ENABLED: "false"
 
-      MONGODB_AUDIT_HOSTNAME: "mongodb"
+      MONGODB_AUDIT_HOSTNAME: mongodb
+      MONGODB_AUDIT_PORT: 27017
       MONGODB_AUDIT_USERNAME: "registry"
       MONGODB_AUDIT_PASSWORD: "registry"
-      MONGODB_BILLING_HOSTNAME: "mongodb"
+
+      MONGO_AUDIT_HOSTNAME: mongodb
+      MONGO_AUDIT_PORT: 27017
+      MONGO_AUDIT_USERNAME: "registry"
+      MONGO_AUDIT_PASSWORD: "registry"
+      
+      MONGO_BILLING_HOSTNAME: mongodb
+      MONGO_BILLING_PORT: 27017
+      MONGO_BILLING_USERNAME: "registry"
+      MONGO_BILLING_PASSWORD: "registry"
+
+      MONGODB_BILLING_HOSTNAME: mongodb
+      MONGODB_BILLING_PORT: 27017
       MONGODB_BILLING_USERNAME: "registry"
       MONGODB_BILLING_PASSWORD: "registry"
+      
       MONGODB_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGODB_PRIVATE_STORAGE_PORT: 27017
       MONGODB_PRIVATE_STORAGE_USERNAME: "registry"
       MONGODB_PRIVATE_STORAGE_PASSWORD: "registry"
-      MONGODB_HOSTNAME: "mongodb"
+
+      MONGO_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGO_PRIVATE_STORAGE_PORT: 27017
+      MONGO_PRIVATE_STORAGE_USERNAME: "registry"
+      MONGO_PRIVATE_STORAGE_PASSWORD: "registry"
+      
+      MONGODB_HOSTNAME: mongodb
       MONGODB_USERNAME: "registry"
       MONGODB_PASSWORD: "registry"
+      MONGODB_PORT: 27017
+
+      MONGO_HOSTNAME: mongodb
+      MONGO_USERNAME: "registry"
+      MONGO_PASSWORD: "registry"
+      MONGO_PORT: 27017
 
       REDIS_HOSTNAME: "redis"
       REDIS_PORT: "6379"
@@ -216,10 +336,10 @@ services:
       RABBITMQ_HOSTNAME: "rabbitmq"
       RABBITMQ_API_HOST: "rabbitmq"
       RABBITMQ_API_PORT: "15672"
-      RABBITMQ_API_USERNAME: "user"
-      RABBITMQ_API_PASSWORD: "bitnami"
-      RABBITMQ_USERNAME: "user"
-      RABBITMQ_PASSWORD: "bitnami"
+      RABBITMQ_API_USERNAME: "rabbitmq"
+      RABBITMQ_API_PASSWORD: "rabbitmq"
+      RABBITMQ_USERNAME: "rabbitmq"
+      RABBITMQ_PASSWORD: "rabbitmq"
       RABBITMQ_VIRTUALHOST: "/"
       
       EVENT_STORAGE_BEAN: "cassandraEvents"
@@ -230,6 +350,7 @@ services:
       CASSANDRA_USERNAME: "cassandra"
       CASSANDRA_PASSWORD: "cassandra"
   bridge:
+    #image: "konkerlabs/konker-platform:konker.mqtt.bridge-latest"
     image: "konkerlabs/konker-platform:registry-mqtt-bridge-latest"
     #build: ../../konker.registry.data.processor/
     container_name: bridge
@@ -242,38 +363,69 @@ services:
       - "8585:8080"
     networks:
       - registry
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       PUB_SERVER_SSL_ENABLED: "false"
 
-      MONGODB_AUDIT_HOSTNAME: "mongodb"
+      MONGODB_AUDIT_HOSTNAME: mongodb
+      MONGODB_AUDIT_PORT: 27017
       MONGODB_AUDIT_USERNAME: "registry"
       MONGODB_AUDIT_PASSWORD: "registry"
-      MONGODB_BILLING_HOSTNAME: "mongodb"
+
+      MONGO_AUDIT_HOSTNAME: mongodb
+      MONGO_AUDIT_PORT: 27017
+      MONGO_AUDIT_USERNAME: "registry"
+      MONGO_AUDIT_PASSWORD: "registry"
+      
+      MONGO_BILLING_HOSTNAME: mongodb
+      MONGO_BILLING_PORT: 27017
+      MONGO_BILLING_USERNAME: "registry"
+      MONGO_BILLING_PASSWORD: "registry"
+
+      MONGODB_BILLING_HOSTNAME: mongodb
+      MONGODB_BILLING_PORT: 27017
       MONGODB_BILLING_USERNAME: "registry"
       MONGODB_BILLING_PASSWORD: "registry"
+      
       MONGODB_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGODB_PRIVATE_STORAGE_PORT: 27017
       MONGODB_PRIVATE_STORAGE_USERNAME: "registry"
       MONGODB_PRIVATE_STORAGE_PASSWORD: "registry"
-      MONGODB_HOSTNAME: "mongodb"
+
+      MONGO_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGO_PRIVATE_STORAGE_PORT: 27017
+      MONGO_PRIVATE_STORAGE_USERNAME: "registry"
+      MONGO_PRIVATE_STORAGE_PASSWORD: "registry"
+      
+      MONGODB_HOSTNAME: mongodb
       MONGODB_USERNAME: "registry"
       MONGODB_PASSWORD: "registry"
+      MONGODB_PORT: 27017
+
+      MONGO_HOSTNAME: mongodb
+      MONGO_USERNAME: "registry"
+      MONGO_PASSWORD: "registry"
+      MONGO_PORT: 27017
 
       REDIS_HOSTNAME: "redis"
       REDIS_PORT: "6379"
 
       RABBIT_HOSTNAME: "rabbitmq"
-      #RABBITMQ_API_HOST: "rabbitmq"
-      #RABBITMQ_APIPORT: "5672"
-      #RABBITMQ_APIUSERNAME: "user"
-      #RABBITMQ_APIPASSWORD: "bitnami"
-      RABBIT_USERNAME: "user"
-      RABBIT_PASSWORD: "bitnami"
+      RABBITMQ_API_HOST: "rabbitmq"
+      RABBITMQ_APIPORT: "5672"
+      RABBITMQ_APIUSERNAME: "admin"
+      RABBITMQ_APIPASSWORD: "rabbitmq"
+      RABBIT_USERNAME: "admin"
+      RABBIT_PASSWORD: "rabbitmq"
       RABBIT_DEVICE_CONTEXT: "/"
       MQTT_HOSTNAME: "tcp://mosquitto:1883"
-      MQTT_SUB_USERNAME: "brige"
-      MQTT_SUB_PASSWORD: "brigde"
-      MQTT_PUB_USERNAME: "brigde"
-      MQTT_PUB_PASSWORD: "bridge"
+      MQTT_SUB_USERNAME: "0jeOyWW4cpx5Bicx"
+      MQTT_SUB_PASSWORD: "registry"
+      MQTT_PUB_USERNAME: "xK7GeQO1Z8FtabkT"
+      MQTT_PUB_PASSWORD: "registry"
       
       EVENT_STORAGE_BEAN: "cassandraEvents"
       CASSANDRA_CLUSTERNAME: "registry"
@@ -282,9 +434,10 @@ services:
       CASSANDRA_HOSTNAME: "cassandra"
       CASSANDRA_USERNAME: "cassandra"
       CASSANDRA_PASSWORD: "cassandra"
+
   router:
-    #image: "konkerlabs/konker-platform:konker.registry.api-5144526589"
-    build: ../../../konker.registry.router/
+    image: "konkerlabs/konker-registry:konker.registry.router-1454482032"
+    #build: ../../../konker.registry.router/
     container_name: router
     links:
       - mongodb
@@ -295,21 +448,52 @@ services:
       - "8383:8080"
     networks:
       - registry
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     environment:
       PUB_SERVER_SSL_ENABLED: "false"
 
-      MONGODB_AUDIT_HOSTNAME: "mongodb"
+      MONGODB_AUDIT_HOSTNAME: mongodb
+      MONGODB_AUDIT_PORT: 27017
       MONGODB_AUDIT_USERNAME: "registry"
       MONGODB_AUDIT_PASSWORD: "registry"
-      MONGODB_BILLING_HOSTNAME: "mongodb"
+
+      MONGO_AUDIT_HOSTNAME: mongodb
+      MONGO_AUDIT_PORT: 27017
+      MONGO_AUDIT_USERNAME: "registry"
+      MONGO_AUDIT_PASSWORD: "registry"
+      
+      MONGO_BILLING_HOSTNAME: mongodb
+      MONGO_BILLING_PORT: 27017
+      MONGO_BILLING_USERNAME: "registry"
+      MONGO_BILLING_PASSWORD: "registry"
+
+      MONGODB_BILLING_HOSTNAME: mongodb
+      MONGODB_BILLING_PORT: 27017
       MONGODB_BILLING_USERNAME: "registry"
       MONGODB_BILLING_PASSWORD: "registry"
+      
       MONGODB_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGODB_PRIVATE_STORAGE_PORT: 27017
       MONGODB_PRIVATE_STORAGE_USERNAME: "registry"
       MONGODB_PRIVATE_STORAGE_PASSWORD: "registry"
-      MONGODB_HOSTNAME: "mongodb"
+
+      MONGO_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGO_PRIVATE_STORAGE_PORT: 27017
+      MONGO_PRIVATE_STORAGE_USERNAME: "registry"
+      MONGO_PRIVATE_STORAGE_PASSWORD: "registry"
+      
+      MONGODB_HOSTNAME: mongodb
       MONGODB_USERNAME: "registry"
       MONGODB_PASSWORD: "registry"
+      MONGODB_PORT: 27017
+
+      MONGO_HOSTNAME: mongodb
+      MONGO_USERNAME: "registry"
+      MONGO_PASSWORD: "registry"
+      MONGO_PORT: 27017
 
       REDIS_HOSTNAME: "redis"
       REDIS_PORT: "6379"
@@ -319,45 +503,78 @@ services:
       #RABBITMQ_APIPORT: "5672"
       RABBITMQ_APIUSERNAME: "user"
       RABBITMQ_APIPASSWORD: "bitnami"
-      RABBITMQ_USERNAME: "user"
-      RABBITMQ_PASSWORD: "bitnami"
+      RABBITMQ_USERNAME: "rabbitmq"
+      RABBITMQ_PASSWORD: "rabbitmq"
       RABBITMQ_VHOST: "/"
       
       EVENT_STORAGE_BEAN: "cassandraEvents"
       CASSANDRA_CLUSTERNAME: "registry"
       CASSANDRA_DATACENTER: "datacenter1"
-      CASSANDRA_KEYSPACE: registry"
+      CASSANDRA_KEYSPACE: "registry"
       CASSANDRA_HOSTNAME: "cassandra"
       CASSANDRA_USERNAME: "cassandra"
       CASSANDRA_PASSWORD: "cassandra"
   web:
     #image: "konkerlabs/konker-platform:konker.registry.web-latest"
-    build: ../../../konker.registry.web/
+    image: "konkerlabs/konker-registry:konker.registry.web-1454482032"
+    #build: ../../../konker.registry.web/
     container_name: web
     links:
       - mongodb
       - cassandra
       - redis
       - rabbitmq
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
     ports:
       - "8484:8080"
+      - "8888:80"
     networks:
       - registry
     environment:
-      PUB_SERVER_SSL_ENABLED: "false"
+      PUB_SERVER_SSL_ENABLED: "true"
 
       MONGODB_AUDIT_HOSTNAME: mongodb
+      MONGODB_AUDIT_PORT: 27017
       MONGODB_AUDIT_USERNAME: "registry"
       MONGODB_AUDIT_PASSWORD: "registry"
+
+      MONGO_AUDIT_HOSTNAME: mongodb
+      MONGO_AUDIT_PORT: 27017
+      MONGO_AUDIT_USERNAME: "registry"
+      MONGO_AUDIT_PASSWORD: "registry"
+      
+      MONGO_BILLING_HOSTNAME: mongodb
+      MONGO_BILLING_PORT: 27017
+      MONGO_BILLING_USERNAME: "registry"
+      MONGO_BILLING_PASSWORD: "registry"
+
       MONGODB_BILLING_HOSTNAME: mongodb
+      MONGODB_BILLING_PORT: 27017
       MONGODB_BILLING_USERNAME: "registry"
       MONGODB_BILLING_PASSWORD: "registry"
+      
       MONGODB_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGODB_PRIVATE_STORAGE_PORT: 27017
       MONGODB_PRIVATE_STORAGE_USERNAME: "registry"
       MONGODB_PRIVATE_STORAGE_PASSWORD: "registry"
+
+      MONGO_PRIVATE_STORAGE_HOSTNAME: "mongodb"
+      MONGO_PRIVATE_STORAGE_PORT: 27017
+      MONGO_PRIVATE_STORAGE_USERNAME: "registry"
+      MONGO_PRIVATE_STORAGE_PASSWORD: "registry"
+      
       MONGODB_HOSTNAME: mongodb
       MONGODB_USERNAME: "registry"
       MONGODB_PASSWORD: "registry"
+      MONGODB_PORT: 27017
+
+      MONGO_HOSTNAME: mongodb
+      MONGO_USERNAME: "registry"
+      MONGO_PASSWORD: "registry"
+      MONGO_PORT: 27017
 
       REDIS_HOSTNAME: "redis"
       REDIS_PORT: "6379"
@@ -367,8 +584,8 @@ services:
       #RABBITMQ_APIPORT: "5672"
       RABBITMQ_APIUSERNAME: "user"
       RABBITMQ_APIPASSWORD: "bitnami"
-      RABBITMQ_USERNAME: "user"
-      RABBITMQ_PASSWORD: "bitnami"
+      RABBITMQ_USERNAME: "rabbitmq"
+      RABBITMQ_PASSWORD: "rabbitmq"
       RABBITMQ_VHOST: "/"
       
       EVENT_STORAGE_BEAN: "cassandraEvents"
@@ -378,6 +595,7 @@ services:
       CASSANDRA_HOSTNAME: "cassandra"
       CASSANDRA_USERNAME: cassandra
       CASSANDRA_PASSWORD: cassandra
+      CASSANDRA_PORT: 9042
 
       AMAZON_KINESISROUTEENABLED: "false"
       
@@ -393,3 +611,28 @@ services:
 
       SECURITY_LOGIN_PAGE: "/login"
       SECURITY_SUCCESS_LOGIN_URL: "/"
+
+      PUB_HTTP_HOSTNAME: "data-ucmp.soneca.dev"
+      PUBSERVER_HTTPPORT:  "80" 
+      PUB_SERVER_HTTP_CTX:  "registry"
+      PUBSERVER_HTTPSPORT: "443"
+      PUB_MQTT_HOSTNAME: "ucmp.soneca.dev"
+      PUB_SERVER_MQTT_PORT: "1883"
+      PUB_SERVER_MQTT_TLS_PORT: "8883"
+
+  proxy:
+    image: nginx:latest
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - registry
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/certs:ro
+    depends_on:
+      - web
+      - api
+      - data
+    restart: unless-stopped

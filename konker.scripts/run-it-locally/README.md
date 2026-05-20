@@ -68,6 +68,429 @@ docker exec -it mongodb bash
 
 cqlsh -u cassandra -p cassandra
 CREATE KEYSPACE registry  WITH REPLICATION = {     'class' : 'SimpleStrategy', 'replication_factor': 1 } ;
+CREATE TABLE incoming_events (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_deleted (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, device_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_device_guid (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, device_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_device_guid_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, device_guid, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+
+CREATE TABLE outgoing_events (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE outgoing_events_deleted (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, device_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE outgoing_events_device_guid (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, device_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE outgoing_events_device_guid_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, device_guid, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE outgoing_events_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    payload text,
+    PRIMARY KEY ((tenant_domain, application_name, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+
+ALTER TABLE incoming_events ADD geo_lat double;
+ALTER TABLE incoming_events ADD	geo_lon double;
+ALTER TABLE incoming_events ADD	geo_hdop bigint;
+ALTER TABLE incoming_events ADD	geo_elev double;
+ALTER TABLE incoming_events ADD ingested_timestamp bigint;
+
+ALTER TABLE incoming_events_deleted ADD geo_lat double;
+ALTER TABLE incoming_events_deleted ADD geo_lon double;
+ALTER TABLE incoming_events_deleted ADD geo_hdop bigint;
+ALTER TABLE incoming_events_deleted ADD geo_elev double;
+ALTER TABLE incoming_events_deleted ADD ingested_timestamp bigint;
+
+ALTER TABLE incoming_events_device_guid ADD geo_lat double;
+ALTER TABLE incoming_events_device_guid ADD geo_lon double;
+ALTER TABLE incoming_events_device_guid ADD geo_hdop bigint;
+ALTER TABLE incoming_events_device_guid ADD geo_elev double;
+ALTER TABLE incoming_events_device_guid ADD ingested_timestamp bigint;
+
+ALTER TABLE incoming_events_device_guid_channel ADD geo_lat double;
+ALTER TABLE incoming_events_device_guid_channel ADD geo_lon double;
+ALTER TABLE incoming_events_device_guid_channel ADD geo_hdop bigint;
+ALTER TABLE incoming_events_device_guid_channel ADD geo_elev double;
+ALTER TABLE incoming_events_device_guid_channel ADD ingested_timestamp bigint;
+
+ALTER TABLE incoming_events_channel ADD geo_lat double;
+ALTER TABLE incoming_events_channel ADD geo_lon double;
+ALTER TABLE incoming_events_channel ADD geo_hdop bigint;
+ALTER TABLE incoming_events_channel ADD geo_elev double;
+ALTER TABLE incoming_events_channel ADD ingested_timestamp bigint;
+
+
+ALTER TABLE outgoing_events ADD geo_lat double;
+ALTER TABLE outgoing_events ADD	geo_lon double;
+ALTER TABLE outgoing_events ADD	geo_hdop bigint;
+ALTER TABLE outgoing_events ADD	geo_elev double;
+ALTER TABLE outgoing_events ADD ingested_timestamp bigint;
+
+ALTER TABLE outgoing_events_deleted ADD geo_lat double;
+ALTER TABLE outgoing_events_deleted ADD geo_lon double;
+ALTER TABLE outgoing_events_deleted ADD geo_hdop bigint;
+ALTER TABLE outgoing_events_deleted ADD geo_elev double;
+ALTER TABLE outgoing_events_deleted ADD ingested_timestamp bigint;
+
+ALTER TABLE outgoing_events_device_guid ADD geo_lat double;
+ALTER TABLE outgoing_events_device_guid ADD geo_lon double;
+ALTER TABLE outgoing_events_device_guid ADD geo_hdop bigint;
+ALTER TABLE outgoing_events_device_guid ADD geo_elev double;
+ALTER TABLE outgoing_events_device_guid ADD ingested_timestamp bigint;
+
+ALTER TABLE outgoing_events_device_guid_channel ADD geo_lat double;
+ALTER TABLE outgoing_events_device_guid_channel ADD geo_lon double;
+ALTER TABLE outgoing_events_device_guid_channel ADD geo_hdop bigint;
+ALTER TABLE outgoing_events_device_guid_channel ADD geo_elev double;
+ALTER TABLE outgoing_events_device_guid_channel ADD ingested_timestamp bigint;
+
+ALTER TABLE outgoing_events_channel ADD geo_lat double;
+ALTER TABLE outgoing_events_channel ADD geo_lon double;
+ALTER TABLE outgoing_events_channel ADD geo_hdop bigint;
+ALTER TABLE outgoing_events_channel ADD geo_elev double;
+ALTER TABLE outgoing_events_channel ADD ingested_timestamp bigint;
+
+
+CREATE TABLE incoming_events_location_guid (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_location_guid_device_guid (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid, device_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_location_guid_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_location_guid_deviceguid_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid, device_guid, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+ALTER TABLE incoming_events ADD location_guid text;
+ALTER TABLE incoming_events_deleted ADD location_guid text;
+ALTER TABLE incoming_events_device_guid ADD location_guid text;
+ALTER TABLE incoming_events_device_guid_channel ADD location_guid text;
+ALTER TABLE incoming_events_channel ADD location_guid text;
+
+CREATE TABLE incoming_events_location_guid (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_location_guid_device_guid (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid, device_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_location_guid_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE incoming_events_location_guid_deviceguid_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid, device_guid, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+ALTER TABLE incoming_events ADD location_guid text;
+ALTER TABLE incoming_events_deleted ADD location_guid text;
+ALTER TABLE incoming_events_device_guid ADD location_guid text;
+ALTER TABLE incoming_events_device_guid_channel ADD location_guid text;
+ALTER TABLE incoming_events_channel ADD location_guid text;
+
+CREATE TABLE outgoing_events_location_guid (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE outgoing_events_location_guid_device_guid (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid, device_guid), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE outgoing_events_location_guid_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+CREATE TABLE outgoing_events_location_guid_deviceguid_channel (
+    tenant_domain text,
+    application_name text,
+    timestamp bigint,
+    channel text,
+    device_guid text,
+    device_id text,
+    payload text,
+    location_guid text,
+    incoming_channel text,
+    incoming_device_guid text,
+    incoming_device_id text,
+    geo_lat double,
+    geo_lon double,
+    geo_hdop bigint,
+    geo_elev double,
+    ingested_timestamp bigint,
+    PRIMARY KEY ((tenant_domain, application_name, location_guid, device_guid, channel), timestamp)
+) WITH CLUSTERING ORDER BY (timestamp DESC);
+
+ALTER TABLE outgoing_events ADD location_guid text;
+ALTER TABLE outgoing_events_deleted ADD location_guid text;
+ALTER TABLE outgoing_events_device_guid ADD location_guid text;
+ALTER TABLE outgoing_events_device_guid_channel ADD location_guid text;
+ALTER TABLE outgoing_events_channel ADD location_guid text;
+
 
 exit
 exit
@@ -79,6 +502,10 @@ Now we can start other containers
 ```
 sudo docker-compose up -d rabbitmq redis mosquitto web api data data-processor bridge router
 ```
+
+
+
+
 
 Services will be available at
 - API http://localhost:8080
