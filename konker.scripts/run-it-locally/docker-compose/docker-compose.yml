@@ -128,9 +128,9 @@ services:
         soft: 65536
         hard: 65536
     environment:
-      #SWAGGER_HOSTNAME: "localhost:8080"
-      #SWAGGER_PROTOCOL: "http"
-      PUB_SERVER_SSL_ENABLED: "false"
+      SWAGGER_HOSTNAME: "api-ucmp.soneca.dev"
+      SWAGGER_PROTOCOL: "https"
+      PUB_SERVER_SSL_ENABLED: "true"
 
       MONGODB_AUDIT_HOSTNAME: mongodb
       MONGODB_AUDIT_PORT: 27017
